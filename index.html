@@ -1,0 +1,58 @@
+const DB_ID = "1zu9PfKxmRlepwoIlMe-5WOsTp4k9rZM6FBz0VwJvLn0"; // Replace with your sheet ID
+
+function doGet(e) {
+  return HtmlService.createHtmlOutputFromFile('index')
+      .setTitle('UCCP La Verna Hills Church Portal');
+}
+
+// Get announcements
+function getAnnouncements() {
+  const sheet = SpreadsheetApp.openById(DB_ID).getSheetByName("Announcements");
+  if (!sheet) return [];
+
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return [];
+
+  // Skip header row and filter Active announcements
+  const announcements = data.slice(1)
+    .filter(row => row[3] && row[3].toString().trim().toLowerCase() === "active")
+    .map(row => {
+      return [
+        row[0] instanceof Date ? row[0].toISOString().split('T')[0] : row[0], // convert Date to YYYY-MM-DD
+        row[1],
+        row[2],
+        row[3]
+      ];
+    });
+
+  return announcements;
+}
+
+// Add new announcement from admin form
+function addAnnouncement(data) {
+  const sheet = SpreadsheetApp.openById(DB_ID).getSheetByName("Announcements");
+  sheet.appendRow([data.date, data.title, data.content, data.status]);
+  return "Announcement added successfully!";
+}
+
+// Placeholder functions for other sections
+function getEvents() {
+  const sheet = SpreadsheetApp.openById(DB_ID).getSheetByName("Events");
+  if (!sheet) return [];
+  const data = sheet.getDataRange().getValues();
+  return data.length > 1 ? data.slice(1) : [];
+}
+
+function getSermons() {
+  const sheet = SpreadsheetApp.openById(DB_ID).getSheetByName("Sermons");
+  if (!sheet) return [];
+  const data = sheet.getDataRange().getValues();
+  return data.length > 1 ? data.slice(1) : [];
+}
+
+// Submit prayer request
+function submitPrayer(data) {
+  const sheet = SpreadsheetApp.openById(DB_ID).getSheetByName("PrayerRequests");
+  sheet.appendRow([new Date(), data.name, data.request]);
+  return "Prayer request submitted. Thank you!";
+}
